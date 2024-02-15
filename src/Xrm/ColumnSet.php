@@ -69,6 +69,7 @@ class ColumnSet {
 
         $this->Columns[] = $column;
         $this->Columns = array_unique( $this->Columns );
+        $this->AllColumns = false;
     }
 
     /**
@@ -79,6 +80,7 @@ class ColumnSet {
     public function AddColumns( array $columns ): void {
         $this->Columns = array_merge( $this->Columns, $columns );
         $this->Columns = array_unique( $this->Columns );
+        $this->AllColumns = false;
     }
 
     /**
@@ -99,7 +101,15 @@ class ColumnSet {
     public function GetExpandQueryOption() {
         $query = [];
         foreach ($this->Expands as $expandColumn => $columnSet) {
-            $query[] = $expandColumn . '($select=' . implode(',', $columnSet->Columns) . ')';
+            $expand = $expandColumn;
+            if (!$columnSet->AllColumns && $columnSet->Columns) {
+                $expand .= '($select=' . implode(',', $columnSet->Columns);
+                if ($nestedExpand = $columnSet->GetExpandQueryOption()) {
+                    $expand .= ';$expand=' . $nestedExpand;
+                }
+                $expand .= ')';
+            }
+            $query[] = $expand;
         }
         return implode(',', $query);
     }
