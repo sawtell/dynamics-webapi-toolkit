@@ -90,7 +90,7 @@ class QueryByAttribute extends QueryBase {
      * @param  \AlexaCRM\Xrm\Query\FilterSet|\AlexaCRM\Xrm\Query\Filter  $filter
      * @return void
      */
-    public function AddFilter( FilterSet|Filter $filter ): void {
+    public function AddFilter( FilterSet|Filter|LambdaFilter $filter ): void {
         $this->Filters[] = $filter;
     }
 
