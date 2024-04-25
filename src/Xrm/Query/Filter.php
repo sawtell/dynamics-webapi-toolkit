@@ -39,8 +39,8 @@ class Filter
     public function toString()
     {
         if (in_array($this->operator, self::ODATA_QUERY_FUNCTIONS)) {
-            return !$this->lambda ? $this->operator .'('.$this->name . ', \'' . $this->value . '\')'
-                : $this->operator . '(' . LambdaFilter::TYPE . '/' . $this->name . ', \'' . $this->value . '\'))';
+            return !$this->lambda ? $this->operator . '(' . $this->name . ', \'' . $this->value . '\')'
+                : $this->operator . '(' . LambdaFilter::TYPE . '/' . $this->name . ', \'' . $this->value . '\')';
         }
 
         if (in_array($this->operator, self::QUERY_FUNCTIONS)) {
