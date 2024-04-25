@@ -28,7 +28,7 @@ class Filter
         if (in_array($this->operator, self::ODATA_QUERY_FUNCTIONS) && !is_string($this->value)) {
             throw new \Exception('Filter value must be a string when using OData query function operators');
         }
-        if (in_array($this->operator,self::COMPARISON_OPERATORS) && (!is_string($this->value) && !is_numeric($this->value))) {
+        if (in_array($this->operator, self::COMPARISON_OPERATORS) && (!is_string($this->value) && !is_numeric($this->value))) {
             throw new \Exception('Filter value must be a string or number when using comparison operators');
         }
     }
