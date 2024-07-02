@@ -91,7 +91,7 @@ class SerializationHelper {
         $translatedData = [];
 
         foreach ( $touchedFields as $field => $value ) {
-            $outboundMapping = $outboundMap[$field];
+            $outboundMapping = !empty($outboundMap[$field]) ? $outboundMap[$field] : null;
             $isLookup = is_array( $outboundMapping );
 
             if ( is_string( $outboundMapping ) ) {
