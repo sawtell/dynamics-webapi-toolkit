@@ -82,6 +82,12 @@ abstract class Settings implements LoggerAwareInterface {
     public ?string $callerID = null;
 
     /**
+     * Option to fetch all nested items when running a query
+     * whereby the child items from a related expand are paginated.
+     */
+    public ?bool $fetchNextNested = false;
+
+    /**
      * Settings constructor.
      */
     public function __construct() {
