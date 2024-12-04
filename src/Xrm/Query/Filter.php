@@ -6,7 +6,7 @@ class Filter
 {
     const COMPARISON_OPERATORS = ['eq', 'ne', 'gt', 'ge', 'lt', 'le'];
     const ODATA_QUERY_FUNCTIONS = ['contains', 'endswith', 'startswith'];
-    const QUERY_FUNCTIONS = ['In', 'NotIn'];
+    const QUERY_FUNCTIONS = ['In', 'NotIn', 'Between', 'NotBetween'];
 
     /**
      * @param  string  $name
