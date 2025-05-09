@@ -46,12 +46,14 @@ class ClientFactory {
         string $instanceURI,
         string $applicationID,
         string $applicationSecret,
-        array $services = []
+        array $services = [],
+        ?bool $fetchNextNested = false,
     ): Client {
         $settings = new OnlineSettings();
         $settings->instanceURI = $instanceURI;
         $settings->applicationID = $applicationID;
         $settings->applicationSecret = $applicationSecret;
+        $settings->fetchNextNested = $fetchNextNested;
 
         if ( isset ( $services['logger'] ) && $services['logger'] instanceof LoggerInterface ) {
             $settings->setLogger( $services['logger'] );

@@ -40,6 +40,8 @@ class ColumnSet {
      */
     public array $Columns = [];
 
+    public array $Expands = [];
+
     /**
      * ColumnSet constructor.
      *
@@ -67,6 +69,7 @@ class ColumnSet {
 
         $this->Columns[] = $column;
         $this->Columns = array_unique( $this->Columns );
+        $this->AllColumns = false;
     }
 
     /**
@@ -77,6 +80,37 @@ class ColumnSet {
     public function AddColumns( array $columns ): void {
         $this->Columns = array_merge( $this->Columns, $columns );
         $this->Columns = array_unique( $this->Columns );
+        $this->AllColumns = false;
     }
 
+    /**
+     * Adds an expand to the column set
+     *
+     * @param $column
+     * @param  \AlexaCRM\Xrm\ColumnSet  $columnSet
+     */
+    public function AddExpand( $column, ColumnSet $columnSet ): void {
+        $this->Expands[$column] = $columnSet;
+    }
+
+    /**
+     * Convert the expand options into a valid query string.
+     *
+     * @return string
+     */
+    public function GetExpandQueryOption() {
+        $query = [];
+        foreach ($this->Expands as $expandColumn => $columnSet) {
+            $expand = $expandColumn;
+            if (!$columnSet->AllColumns && $columnSet->Columns) {
+                $expand .= '($select=' . implode(',', $columnSet->Columns);
+                if ($nestedExpand = $columnSet->GetExpandQueryOption()) {
+                    $expand .= ';$expand=' . $nestedExpand;
+                }
+                $expand .= ')';
+            }
+            $query[] = $expand;
+        }
+        return implode(',', $query);
+    }
 }

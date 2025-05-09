@@ -346,13 +346,14 @@ class Client {
     /**
      * @param string $uri
      * @param null $queryOptions
+     * @param null|bool $fetchNextNested
      *
      * @return ListResponse
      * @throws AuthenticationException
      * @throws ODataException
      * @throws TransportException
      */
-    public function getList( string $uri, $queryOptions = null ): ListResponse {
+    public function getList( string $uri, $queryOptions = null, ?bool $fetchNextNested = null ): ListResponse {
         $url = $this->buildQueryURL( $uri, $queryOptions );
         $res = $this->doRequest( 'GET', $url, null, $this->buildQueryHeaders( $queryOptions ) );
 
@@ -396,7 +397,62 @@ class Client {
             unset( $result->SkipToken );
         }
 
+        $fetchNested = (is_null($fetchNextNested)) ? $this->settings->fetchNextNested : $fetchNextNested;
+        if ($fetchNested) {
+            // Loop through the result data and fetch any NextLink data from the child items.
+            foreach ($result->List as $index => $item) {
+                $result->List[$index] = $this->fetchNestedNextLink($item, $queryOptions);
+            }
+        }
+
         return $result;
+    }
+
+    /**
+     * @param $item
+     * @param $queryOptions
+     * @return mixed
+     */
+    public function fetchNestedNextLink($item, $queryOptions): mixed
+    {
+        if (!is_object($item)) {
+            return $item;
+        }
+
+        $itemArray = get_object_vars($item);
+        $itemArrayKeys = array_keys($itemArray);
+        $skip = [];
+
+        // If there is a NextLink, loop over until all results are fetched.
+        if ($matches = preg_grep('/.*' . Annotation::ODATA_NEXTLINK . '$/', $itemArrayKeys)) {
+            foreach ($matches as $nextLinkName) {
+                $skip[] = $fieldName = stristr($nextLinkName, Annotation::ODATA_NEXTLINK, true);
+                // Keep fetching the next set of results until there are no next results.
+                $nextLink = $item->{$nextLinkName};
+                while ( $nextLink != null ) {
+                    try {
+                        $res = $this->doRequest( 'GET', $nextLink, null, $this->buildQueryHeaders( $queryOptions ) );
+
+                        $data = json_decode( $res->getBody() );
+                        $item->{$fieldName} = array_merge( $item->{$fieldName}, $data->value );
+
+                        $nextLink = $data->{Annotation::ODATA_NEXTLINK} ?? null;
+                    } catch (\Exception $exception) {
+                        // If there is an exception, stop fetching and continue as normal.
+                        $nextLink = null;
+                    }
+                }
+            }
+        }
+
+        // Loop through the children of the current item to fetch any other nested NextLinks
+        foreach ($itemArray as $name => $childItem) {
+            if (!in_array($name, $skip)) {
+                $item->{$name} = $this->fetchNestedNextLink($childItem, $queryOptions);
+            }
+        }
+
+        return $item;
     }
 
     /**
